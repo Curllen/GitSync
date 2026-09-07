@@ -10,16 +10,14 @@ class PremiumManager {
   final ValueNotifier<bool?> hasPremiumNotifier = ValueNotifier(null);
 
   Future<void> init() async {
-    await updateGitHubSponsorPremium();
-
-    final isPremium = await _readPremiumStatus();
-    hasPremiumNotifier.value = isPremium;
+    // Premium is unlocked for everyone in this build: no need to query
+    // GitHub Sponsors, so skip the network check entirely.
+    hasPremiumNotifier.value = true;
   }
 
   Future<bool> _readPremiumStatus() async {
-    return
-    // kDebugMode ||
-    await repoManager.getBool(StorageKey.repoman_hasGHSponsorPremium);
+    // Always grant premium access (multiple repos, Git LFS, git filters, etc.).
+    return true;
   }
 
   Future<void> updateGitHubSponsorPremium() async {

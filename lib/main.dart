@@ -1999,16 +1999,6 @@ class _MyHomePageState extends ConsumerState<MyHomePage> with WidgetsBindingObse
                                       }
                                     }
 
-                                    if (premiumManager.hasPremiumNotifier.value != true) {
-                                      final result = await Navigator.of(context, rootNavigator: true).push(createUnlockPremiumRoute(context, {}));
-                                      if (result == true) {
-                                        if (mounted) setState(() {});
-                                        await addRepo();
-                                      }
-                                      if (mounted) setState(() {});
-                                      return;
-                                    }
-
                                     if (repoNamesAsync.valueOrNull!.length == 1 || repoSettingsExpanded) {
                                       addRepo();
                                       return;
@@ -2030,19 +2020,14 @@ class _MyHomePageState extends ConsumerState<MyHomePage> with WidgetsBindingObse
                                   },
                                   child: Row(
                                     children: [
-                                      ValueListenableBuilder(
-                                        valueListenable: premiumManager.hasPremiumNotifier,
-                                        builder: (context, hasPremium, child) => FaIcon(
-                                          hasPremium == true
-                                              ? (repoNamesAsync.valueOrNull!.length == 1 || repoSettingsExpanded
-                                                    ? FontAwesomeIcons.solidSquarePlus
-                                                    : FontAwesomeIcons.ellipsis)
-                                              : FontAwesomeIcons.solidGem,
-                                          color: repoNamesAsync.valueOrNull!.length == 1 || repoSettingsExpanded
-                                              ? colours.tertiaryPositive
-                                              : colours.secondaryLight,
-                                          size: textLG,
-                                        ),
+                                      FaIcon(
+                                        repoNamesAsync.valueOrNull!.length == 1 || repoSettingsExpanded
+                                            ? FontAwesomeIcons.solidSquarePlus
+                                            : FontAwesomeIcons.ellipsis,
+                                        color: repoNamesAsync.valueOrNull!.length == 1 || repoSettingsExpanded
+                                            ? colours.tertiaryPositive
+                                            : colours.secondaryLight,
+                                        size: textLG,
                                       ),
                                       repoNamesAsync.valueOrNull!.length != 1
                                           ? SizedBox.shrink()
@@ -4276,33 +4261,6 @@ class _MyHomePageState extends ConsumerState<MyHomePage> with WidgetsBindingObse
                     ),
                   );
                 },
-              ),
-              ProviderBuilder<bool>(
-                provider: hasGitFiltersProvider,
-                builder: (context, hasFiltersAsync) => !(hasFiltersAsync.valueOrNull ?? false)
-                    ? SizedBox.shrink()
-                    : GestureDetector(
-                        onTap: () => launchUrl(Uri.parse(playStoreLink)),
-                        child: Container(
-                          decoration: BoxDecoration(color: colours.tertiaryInfo),
-                          padding: EdgeInsets.symmetric(vertical: spaceXXS, horizontal: spaceSM),
-                          child: Center(
-                            child: Text.rich(
-                              textAlign: TextAlign.center,
-                              TextSpan(
-                                children: [
-                                  TextSpan(
-                                    text: t.unsupportedGitAttributes,
-                                    style: TextStyle(fontWeight: FontWeight.bold),
-                                  ),
-                                  TextSpan(text: " "),
-                                  TextSpan(text: t.tapToOpenPlayStore),
-                                ],
-                              ),
-                            ),
-                          ),
-                        ),
-                      ),
               ),
               FutureBuilder(
                 future: hasNetworkConnection(),

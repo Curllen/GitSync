@@ -86,7 +86,15 @@ jobs:
           flutter build apk --release --split-per-abi --target-platform="android-arm64"
           flutter build apk --release --split-per-abi --target-platform="android-x64"
 
+      - name: Upload Built APKs
+        uses: actions/upload-artifact@v7
+        with:
+          name: apk-build
+          path: build/app/outputs/flutter-apk/
+          if-no-files-found: error
+
       - name: Sign App
+        if: secrets.RELEASE_KEYSTORE_BASE64 != ''
         id: sign_app
         uses: ilharp/sign-android-release@v2
         with:
@@ -98,6 +106,7 @@ jobs:
           buildToolsVersion: 34.0.0
 
       - name: Format App List
+        if: steps.sign_app.outputs.signedFiles != ''
         id: signed_file_artifacts
         run: |
           {
@@ -107,6 +116,7 @@ jobs:
           } >> "$GITHUB_OUTPUT"
 
       - name: Upload Release Build to Artifacts
+        if: steps.sign_app.outputs.signedFiles != ''
         uses: actions/upload-artifact@v7
         with:
           name: release-artifacts
@@ -115,12 +125,14 @@ jobs:
             !*-release.apk
 
       - uses: jungwinter/split@v2
+        if: steps.sign_app.outputs.signedFiles != ''
         id: signed_files
         with:
           msg: ${{ steps.sign_app.outputs.signedFiles }}
           separator: ":"
 
       - name: Build Changelog
+        if: steps.sign_app.outputs.signedFiles != ''
         id: changelog
         uses: ardalanamini/auto-changelog@v4
         with:
@@ -130,6 +142,7 @@ jobs:
           semver: false
 
       - name: Find and Replace
+        if: steps.sign_app.outputs.signedFiles != ''
         uses: mad9000/actions-find-and-replace-string@5
         id: signed_file_path_0
         with:
@@ -138,6 +151,7 @@ jobs:
           replace: ""
 
       - name: Find and Replace
+        if: steps.sign_app.outputs.signedFiles != ''
         uses: mad9000/actions-find-and-replace-string@5
         id: signed_file_path_1
         with:
@@ -146,6 +160,7 @@ jobs:
           replace: ""
 
       - name: Find and Replace
+        if: steps.sign_app.outputs.signedFiles != ''
         uses: mad9000/actions-find-and-replace-string@5
         id: signed_file_path_2
         with:
@@ -154,12 +169,14 @@ jobs:
           replace: ""
 
       - name: Get Previous Tag
+        if: steps.sign_app.outputs.signedFiles != ''
         id: previous_tag
         run: |
           PREVIOUS_TAG=$(git tag --list 'v*.*.*' --sort=-version:refname | sed -n '2p')
           echo "previous_tag=$PREVIOUS_TAG" >> "$GITHUB_OUTPUT"
 
       - name: Create Release
+        if: steps.sign_app.outputs.signedFiles != ''
         id: create_release
         uses: ncipollo/release-action@v1.21.0
         with:
