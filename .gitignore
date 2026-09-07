@@ -702,3 +702,8 @@ obj/
 
 # Example of un-ignoring a file that would otherwise be ignored:
 # !folder_name/filename.extension
+
+################################################################################
+# App release signing artifacts (PRIVATE - never commit)
+################################################################################
+signing/
