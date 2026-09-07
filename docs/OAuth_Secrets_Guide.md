@@ -46,9 +46,32 @@ const codebergClientId = "";
 
 ### `gitHubAppClientId` / `gitHubAppClientSecret`（GitHub App，免 token 安装式登录）
 1. 开发者后台 → **GitHub Apps → New GitHub App**（[创建地址](https://github.com/settings/apps/new)）
-2. 回调 URL：`gitsync://auth`；Webhook 可留空；Permissions 给足仓库读写权限
-3. **Client ID** → 填 `gitHubAppClientId`
-4. Settings 里 **Client secrets → Generate** 的 secret → 填 `gitHubAppClientSecret`
+2. 回调 URL：`gitsync://auth`；**Webhook Active 可关掉**（GitSync 用不到 webhook）
+3. 按下述“权限勾选”设置 Permissions
+4. **Client ID** → 填 `gitHubAppClientId`
+5. Settings 里 **Client secrets → Generate** 的 secret → 填 `gitHubAppClientSecret`
+
+#### GitHub App 权限勾选（依据 GitSync 实际调用接口，见 `lib/api/manager/auth/github_manager.dart`、`github_app_manager.dart`）
+
+**必选：**
+
+| 界面行 | 官方权限 | 建议 | 用途 |
+|---|---|---|---|
+| Contents | Contents | **Read & write** | clone/fetch/push、列仓库、读分支 |
+| Issues | Issues | **Read & write** | 议题/评论/标签/表情、issue 模板 |
+| Pull requests | Pull requests | **Read & write** | PR 列表、PR 文件变动 |
+| Metadata | Metadata | 只读（强制） | 基础仓库元信息 |
+
+**推荐（可选）：**
+
+| 界面行 | 官方权限 | 建议 | 用途 |
+|---|---|---|---|
+| 工作流程 / Workflows, workflow runs and artifacts | Actions | **Read** | 显示工作流运行记录 |
+| Administration | Administration | **Read** | 显示协作者列表 |
+
+**其余**（Checks、Codespaces、Dependabot、Secrets、Variables、Webhooks、Deployments、Discussions、Pages、Projects、Merge queues、Security advisories 等）GitSync 均未调用，保持 **None** 避免过度授权。
+
+**安装仓库（关键）：** 创建后把 App **安装到你想要 GitSync 管理的仓库**（Install → 选仓库或 “All repositories”）。`github_app_manager` 通过 `/user/installations` 查找已安装仓库，未安装任何仓库将列不出仓库。
 
 ### `giteaClientId`（Gitea OAuth）
 1. 在自建 Gitea 实例：右上头像 → **设置 → 应用 → 管理 OAuth2 应用 → 创建新应用**
