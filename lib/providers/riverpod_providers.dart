@@ -567,7 +567,9 @@ class PremiumStatusNotifier extends Notifier<bool?> {
   }
 
   void set(bool? value) {
-    premiumManager.hasPremiumNotifier.value = value;
+    // Premium cannot be disabled in this build.
+    premiumManager.hasPremiumNotifier.value = true;
+    state = true;
   }
 }
 
