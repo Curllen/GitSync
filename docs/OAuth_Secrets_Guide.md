@@ -16,9 +16,31 @@
 
 > 不要配置为 Environment secrets，也不要放进 Repository variables——工作流使用 `secrets.*`，且未声明 `environment:`。
 
-## 二、`SECRETS` 的默认值
+## 二、`SECRETS` 的含义
 
-如果不使用 OAuth 登录，`SECRETS` 直接用空字符串模板即可，也能正常编译出 APK（App 内使用 PAT / SSH 登录）：
+`SECRETS` 的值就是 **`lib/constant/secrets.dart` 的完整内容**（8 行 `const` 声明）。工作流会把这段内容原样写入构建时的 `secrets.dart`，App 初始化时引用这些常量来决定**内置的一键 OAuth 登录按钮**能否使用。
+
+> 关键澄清：`SECRETS` **不决定**“能连哪些用户/仓库”。无论填不填，用户都可用 HTTPS(用户名+token) / SSH 登录并管理自己有权访问的仓库；多仓库、LFS、Git 过滤器等解锁功能也不受影响。它只影响 App 里 GitHub / Gitea / GitLab / Codeberg 那几个 **OAuth 登录按钮**是否可点。
+
+### 2.1 每个常量的何时需值 / 何时可空
+
+| 常量 | 作用（App 内对应功能） | 何时需要值 | 何时可为空 |
+|---|---|---|---|
+| `oauthRedirectUrl` | 预留的 OAuth 回调地址 | **暂不需要**：源码当前未引用该常量 | 始终为空 |
+| `gitHubClientId`<br>`gitHubClientSecret` | GitHub **OAuth** 登录按钮 | 想让你用户能点 GitHub 按钮一键登录时 | 用不到 OAuth 时可空 |
+| `gitHubAppClientId`<br>`gitHubAppClientSecret` | GitHub **App**（免 token 安装式）登录按钮 | 想让你用户能用 GitHub App 方式授权登录时 | 不用此登录项时可空 |
+| `giteaClientId` | Gitea OAuth 登录按钮 | 想让用户能一键登录自建 Gitea 时（需有自建实例） | 用不到时可空 |
+| `gitlabClientId` | GitLab OAuth 登录按钮 | 想让用户一键登录 GitLab 时 | 用不到时可空 |
+| `codebergClientId` | Codeberg OAuth 登录按钮 | 想让用户一键登录 Codeberg 时 | 用不到时可空 |
+
+**一句话规则：**
+- 只想得到可用的 APK → **8 个都填空字符串**（编译通过，用户用 HTTPS/SSH 登录）。
+- 想让某些**平台的一键 OAuth 登录按钮**可用 → 只填对应平台的 `ClientId`/`ClientSecret`（须在[第三节](#三各字段的申请位置与填法)各平台注册自己的 OAuth 应用），其余保持空串。
+- 8 个常量**缺一不可**：`secrets.dart` 必须含全部 8 个声明，空文件或缺任一常量会导致编译报错。
+
+### 2.2 空字符串模板（可直接作为 `SECRETS` 值）
+
+如果不使用 OAuth 登录，`SECRETS` 直接用空字符串模板即可，也能正常编译出 APK（App 内使用 HTTPS / SSH 登录）：
 
 ```dart
 const oauthRedirectUrl = "";
