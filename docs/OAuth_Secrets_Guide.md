@@ -67,12 +67,50 @@ const codebergClientId = "";
 
 ## 四、发布签名（可选）
 
-需要签名 APK 时将以下 3 个 Secret 一起配好（配合 `RELEASE_KEYSTORE_BASE64`）：
-- `RELEASE_KEYSTORE_BASE64`：keystore 文件的 base64（如 `base64 -w0 gitsync-release.jks` 的输出）
-- `RELEASE_SIGNING_ALIAS`：keystore 别名
+需要**已签名** APK 时，先自行生成签名 keystore，再配置以下 3 个 Secret：
+- `RELEASE_KEYSTORE_BASE64`：keystore 文件的 base64（keystore 的 base64 内容）
+- `RELEASE_SIGNING_ALIAS`：keystore 别名（默认 `gitsync`）
 - `RELEASE_SIGNING_PASSWORD`：keystore 密码
 
 未配置签名会得到未签名 APK（工作流仍会将 `*-release.apk` 上传到 `apk-build` artifact）。
+
+### 4.1 用 keytool 生成 keystore（Linux/macOS）
+
+```bash
+mkdir -p signing && cd signing
+
+# 生成一个随机密码
+PASS=$(openssl rand -base64 24 | tr -dc 'A-Za-z0-9' | head -c 24)
+
+# 生成 keystore（别名 gitsync，RSA 2048，有效期 10000 天）
+keytool -genkeypair -v -keystore gitsync-release.jks -alias gitsync \
+  -keyalg RSA -keysize 2048 -validity 10000 \
+  -storepass "$PASS" -keypass "$PASS" \
+  -dname "CN=GitSync OSS, OU=OSS Build, O=GitSync, L=Internet, ST=Internet, C=US"
+
+# 打印并保存密码（务必自行备份，丢了将无法更新已发布应用）
+echo "$PASS" > keystore_pass.txt
+echo "你的密码：$PASS"
+```
+
+### 4.2 生成 base64 并配置
+
+```bash
+# 得到 RELEASE_KEYSTORE_BASE64 的值（keystore 的 base64 内容）
+base64 -w0 signing/gitsync-release.jks
+
+# 得到 RELEASE_SIGNING_PASSWORD 的值
+cat signing/keystore_pass.txt
+```
+
+- `RELEASE_SIGNING_ALIAS`：`gitsync`
+- `RELEASE_SIGNING_PASSWORD`：`keystore_pass.txt` 内容
+- `RELEASE_KEYSTORE_BASE64`：上面 base64 的**整段输出**（内容可能很长，粘贴完整）
+
+### 4.3 安全提醒
+
+- `signing/` 已加入 `.gitignore`，**不要提交** keystore 与密码到 Git。
+- 若 keystore 曾进入过 git 历史（即使未推送），应视为已泄露，请按 4.1 重新生成新 keystore。
 
 ## 五、触发编译
 
