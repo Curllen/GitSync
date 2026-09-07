@@ -138,7 +138,7 @@ jobs:
           separator: ":"
 
       - name: Build Changelog
-        if: steps.signing.outputs.enabled == 'true' && github.ref_type == 'tag'
+        if: steps.signing.outputs.enabled == 'true'
         id: changelog
         uses: ardalanamini/auto-changelog@v4
         with:
@@ -148,7 +148,7 @@ jobs:
           semver: false
 
       - name: Find and Replace
-        if: steps.signing.outputs.enabled == 'true' && github.ref_type == 'tag'
+        if: steps.signing.outputs.enabled == 'true'
         uses: mad9000/actions-find-and-replace-string@5
         id: signed_file_path_0
         with:
@@ -157,7 +157,7 @@ jobs:
           replace: ""
 
       - name: Find and Replace
-        if: steps.signing.outputs.enabled == 'true' && github.ref_type == 'tag'
+        if: steps.signing.outputs.enabled == 'true'
         uses: mad9000/actions-find-and-replace-string@5
         id: signed_file_path_1
         with:
@@ -166,7 +166,7 @@ jobs:
           replace: ""
 
       - name: Find and Replace
-        if: steps.signing.outputs.enabled == 'true' && github.ref_type == 'tag'
+        if: steps.signing.outputs.enabled == 'true'
         uses: mad9000/actions-find-and-replace-string@5
         id: signed_file_path_2
         with:
@@ -175,14 +175,14 @@ jobs:
           replace: ""
 
       - name: Get Previous Tag
-        if: steps.signing.outputs.enabled == 'true' && github.ref_type == 'tag'
+        if: steps.signing.outputs.enabled == 'true'
         id: previous_tag
         run: |
           PREVIOUS_TAG=$(git tag --list 'v*.*.*' --sort=-version:refname | sed -n '2p')
           echo "previous_tag=$PREVIOUS_TAG" >> "$GITHUB_OUTPUT"
 
       - name: Create Release
-        if: steps.signing.outputs.enabled == 'true' && github.ref_type == 'tag'
+        if: steps.signing.outputs.enabled == 'true'
         id: create_release
         uses: ncipollo/release-action@v1.21.0
         with:
